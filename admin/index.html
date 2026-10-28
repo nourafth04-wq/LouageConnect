@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — LouageConnect</title>
+    <link rel="stylesheet" href="../css/main.css?v=2">
+    <script src="../js/theme.js?v=2"></script>
+    <style>
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+            padding-top: 64px;
+        }
+        .admin-sidebar {
+            width: 220px;
+            min-width: 220px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 24px 0;
+            position: sticky;
+            top: 64px;
+            height: calc(100vh - 64px);
+            overflow-y: auto;
+        }
+        .admin-nav-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            padding: 0 18px;
+            margin-bottom: 8px;
+            margin-top: 20px;
+        }
+        .admin-nav-label:first-child { margin-top: 0; }
+        .admin-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 2px solid transparent;
+        }
+        .admin-nav-item:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+        .admin-nav-item.active { color: var(--indigo-lt); background: rgba(79,70,229,0.08); border-left-color: var(--indigo); }
+        .admin-content { flex: 1; padding: 32px; overflow: auto; position: relative; z-index: 1; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+        .admin-stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+        .admin-stat-value { font-family: var(--font-display); font-size: 2rem; font-weight: 800; }
+        .admin-stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+        .add-car-form {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 28px;
+        }
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+        .section-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+        .admin-badge {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 5px 14px; background: rgba(79,70,229,0.12);
+            border: 1px solid rgba(79,70,229,0.3); border-radius: 100px;
+            font-size: 0.78rem; font-weight: 700; color: var(--indigo-lt);
+            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px;
+        }
+        .role-badge-admin  { background: rgba(79,70,229,0.15); color: var(--indigo-lt); border: 1px solid rgba(79,70,229,0.3); }
+        .role-badge-driver { background: rgba(34,197,94,0.15); color: var(--green);     border: 1px solid rgba(34,197,94,0.3); }
+        .role-badge-user   { background: rgba(148,163,184,0.1); color: #94A3B8;         border: 1px solid rgba(148,163,184,0.15); }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="../index.html" class="nav-brand">
+        <div class="brand-icon">🚖</div>
+        LouageConnect
+    </a>
+    <div class="nav-actions">
+        <span id="nav-username" class="text-sm text-secondary"></span>
+        <a href="../dashboard.html" class="btn btn-ghost btn-sm">← Back to App</a>
+        <a href="../php/logout.php" class="btn btn-ghost btn-sm">Logout</a>
+    </div>
+</nav>
+
+<div class="admin-layout">
+
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+        <div class="admin-nav-label">Overview</div>
+        <div class="admin-nav-item active" onclick="showTab('dashboard')">📊 Dashboard</div>
+
+        <div class="admin-nav-label">Management</div>
+        <div class="admin-nav-item" onclick="showTab('cars')">🚗 Louages</div>
+        <div class="admin-nav-item" onclick="showTab('users')">👥 Users</div>
+        <div class="admin-nav-item" onclick="showTab('reservations')">🎟️ Reservations</div>
+
+        <div class="admin-nav-label">System</div>
+        <div class="admin-nav-item" onclick="showTab('add-car')">➕ Add Louage</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+
+        <!-- ===== DASHBOARD TAB ===== -->
+        <div id="tab-dashboard" class="tab-panel active">
+            <div class="admin-badge">🛠️ Admin Panel</div>
+            <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;margin-bottom:24px">Overview</h1>
+
+            <div class="admin-stats">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value text-indigo" id="a-stat-cars">—</div>
+                    <div class="admin-stat-label">Total Louages</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value" style="color:var(--green)" id="a-stat-moving">—</div>
+                    <div class="admin-stat-label">Currently Moving</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value" id="a-stat-users">—</div>
+                    <div class="admin-stat-label">Registered Users</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value" style="color:var(--amber)" id="a-stat-reservations">—</div>
+                    <div class="admin-stat-label">Total Reservations</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:16px">Quick Actions</h3>
+                <div style="display:flex;gap:12px;flex-wrap:wrap">
+                    <button class="btn btn-primary" onclick="showTab('add-car')">➕ Add New Louage</button>
+                    <button class="btn btn-ghost" onclick="showTab('cars')">🚗 Manage Louages</button>
+                    <button class="btn btn-ghost" onclick="showTab('users')">👥 View Users</button>
+                    <button class="btn btn-ghost" onclick="showTab('reservations')">🎟️ View Reservations</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CARS TAB ===== -->
+        <div id="tab-cars" class="tab-panel">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Louage Fleet</h2>
+                    <p class="section-sub">Manage all active louage vehicles</p>
+                </div>
+                <div style="display:flex;gap:10px">
+                    <button class="btn btn-ghost btn-sm" onclick="loadCarsAdmin()">↺ Refresh</button>
+                    <button class="btn btn-primary btn-sm" onclick="showTab('add-car')">➕ Add Louage</button>
+                </div>
+            </div>
+            <div class="card" style="overflow:auto">
+                <table class="data-table" id="cars-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Route</th><th>Status</th><th>Seats</th>
+                            <th>Driver</th><th>Vehicle</th><th>Plate</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cars-tbody">
+                        <tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-muted)">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== USERS TAB ===== -->
+        <div id="tab-users" class="tab-panel">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Users</h2>
+                    <p class="section-sub">All registered accounts</p>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="loadUsers()">↺ Refresh</button>
+            </div>
+            <div class="card" style="overflow:auto">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr><td colspan="5" style="text-align:center;padding:28px;color:var(--text-muted)">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== RESERVATIONS TAB ===== -->
+        <div id="tab-reservations" class="tab-panel">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Reservations</h2>
+                    <p class="section-sub">All bookings across the platform</p>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="loadReservationsAdmin()">↺ Refresh</button>
+            </div>
+            <div class="card" style="overflow:auto">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>#</th><th>User</th><th>Route</th><th>Seats</th><th>Status</th><th>Date</th></tr>
+                    </thead>
+                    <tbody id="res-tbody">
+                        <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text-muted)">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== ADD CAR TAB ===== -->
+        <div id="tab-add-car" class="tab-panel">
+            <h2 class="section-title" style="margin-bottom:24px">➕ Add New Louage</h2>
+            <div class="add-car-form">
+                <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:18px">Route Information</h3>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Departure City *</label>
+                        <select id="ac-from" class="form-select" onchange="autoFillCoords('from', this.value)">
+                            <option value="">— Select departure —</option>
+                            <option value="Tunis" data-lat="36.791667" data-lng="10.186810">Tunis — Moncef Bey (Sfax / Sousse / South / A1)</option>
+                            <option value="Tunis" data-lat="36.810368" data-lng="10.154295">Tunis — Bab Saadoun (Bizerte / El Kef / NW)</option>
+                            <option value="Sfax" data-lat="34.74056" data-lng="10.76028">Sfax</option>
+                            <option value="Sousse" data-lat="35.810225" data-lng="10.63663">Sousse</option>
+                            <option value="Bizerte" data-lat="37.269258" data-lng="9.872214">Bizerte</option>
+                            <option value="Nabeul" data-lat="36.451436" data-lng="10.729911">Nabeul</option>
+                            <option value="Kairouan" data-lat="35.6781" data-lng="10.09633">Kairouan</option>
+                            <option value="Monastir" data-lat="35.77799" data-lng="10.82617">Monastir</option>
+                            <option value="Gabes" data-lat="33.88146" data-lng="10.0982">Gabes</option>
+                            <option value="Medenine" data-lat="33.36077" data-lng="10.468749">Medenine</option>
+                            <option value="El Kef" data-lat="36.1755" data-lng="8.707334">El Kef</option>
+                            <option value="Hammamet" data-lat="36.4" data-lng="10.61667">Hammamet</option>
+                            <option value="Mahdia" data-lat="35.50472" data-lng="11.06222">Mahdia</option>
+                            <option value="Gafsa" data-lat="34.425" data-lng="8.78417">Gafsa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Destination City *</label>
+                        <select id="ac-to" class="form-select" onchange="autoFillCoords('to', this.value)">
+                            <option value="">— Select destination —</option>
+                            <option value="Tunis" data-lat="36.791667" data-lng="10.186810">Tunis — Moncef Bey (Sfax / Sousse / South / A1)</option>
+                            <option value="Tunis" data-lat="36.810368" data-lng="10.154295">Tunis — Bab Saadoun (Bizerte / El Kef / NW)</option>
+                            <option value="Sfax" data-lat="34.74056" data-lng="10.76028">Sfax</option>
+                            <option value="Sousse" data-lat="35.810225" data-lng="10.63663">Sousse</option>
+                            <option value="Bizerte" data-lat="37.269258" data-lng="9.872214">Bizerte</option>
+                            <option value="Nabeul" data-lat="36.451436" data-lng="10.729911">Nabeul</option>
+                            <option value="Kairouan" data-lat="35.6781" data-lng="10.09633">Kairouan</option>
+                            <option value="Monastir" data-lat="35.77799" data-lng="10.82617">Monastir</option>
+                            <option value="Gabes" data-lat="33.88146" data-lng="10.0982">Gabes</option>
+                            <option value="Medenine" data-lat="33.36077" data-lng="10.468749">Medenine</option>
+                            <option value="El Kef" data-lat="36.1755" data-lng="8.707334">El Kef</option>
+                            <option value="Hammamet" data-lat="36.4" data-lng="10.61667">Hammamet</option>
+                            <option value="Mahdia" data-lat="35.50472" data-lng="11.06222">Mahdia</option>
+                            <option value="Gafsa" data-lat="34.425" data-lng="8.78417">Gafsa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+                <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:18px">Vehicle Details</h3>
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Vehicle Type</label>
+                        <select id="ac-type" class="form-select">
+                            <option>Peugeot 504</option>
+                            <option>Mercedes Sprinter</option>
+                            <option>Renault Trafic</option>
+                            <option>Volkswagen Transporter</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Plate Number</label>
+                        <input type="text" id="ac-plate" class="form-input" placeholder="TU 0000 X">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Total Seats</label>
+                        <input type="number" id="ac-seats" class="form-input" value="8" min="1" max="20">
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Speed (km/h)</label>
+                        <input type="number" id="ac-speed" class="form-input" value="90" min="40" max="150">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Assign Driver</label>
+                        <select id="ac-driver" class="form-select">
+                            <option value="">— No driver —</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="section-divider">
+                <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:4px">GPS Coordinates</h3>
+                <p class="text-xs text-muted" style="margin-bottom:14px">Departure position and destination position</p>
+                <div class="form-grid-2">
+                    <div>
+                        <p class="text-sm text-secondary" style="margin-bottom:10px;font-weight:600">📍 Departure</p>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Lat</label>
+                                <input type="number" id="ac-lat" class="form-input" placeholder="36.8190" step="0.0001">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Lng</label>
+                                <input type="number" id="ac-lng" class="form-input" placeholder="10.1658" step="0.0001">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondary" style="margin-bottom:10px;font-weight:600">🏁 Destination</p>
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Lat</label>
+                                <input type="number" id="ac-dlat" class="form-input" placeholder="34.7398" step="0.0001">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Lng</label>
+                                <input type="number" id="ac-dlng" class="form-input" placeholder="10.7600" step="0.0001">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Estimated Departure Time</label>
+                    <input type="datetime-local" id="ac-departure" class="form-input">
+                </div>
+
+                <button class="btn btn-primary btn-lg" onclick="addCar()" style="margin-top:8px">
+                    ➕ Add Louage to Fleet
+                </button>
+            </div>
+
+            <!-- Preset coordinates helper -->
+            <div class="card">
+                <h4 style="font-family:var(--font-display);font-weight:700;margin-bottom:12px">📍 Quick City Coordinates</h4>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn btn-ghost btn-sm" onclick="fillCoords(36.8190,10.1658,'Tunis')">Tunis</button>
+                    <button class="btn btn-ghost btn-sm" onclick="fillCoords(34.7398,10.7600,'Sfax')">Sfax</button>
+                    <button class="btn btn-ghost btn-sm" onclick="fillCoords(35.8245,10.6346,'Sousse')">Sousse</button>
+                    <button class="btn btn-ghost btn-sm" onclick="fillCoords(36.4513,10.7357,'Nabeul')">Nabeul</button>
+                    <button class="btn btn-ghost btn-sm" onclick="fillCoords(37.2746,9.8739,'Bizerte')">Bizerte</button>
+                    <button class="btn btn-ghost btn-sm" onclick="fillCoords(35.6784,10.0963,'Kairouan')">Kairouan</button>
+                    <button class="btn btn-ghost btn-sm" onclick="fillCoords(35.7643,10.8113,'Monastir')">Monastir</button>
+                </div>
+                <p class="text-xs text-muted" style="margin-top:8px">
+                    Click a city to set it as the <strong>departure</strong> coordinates. Then click another to set <strong>destination</strong>.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="toast-container"></div>
+<script src="../js/utils.js"></script>
+<script>
+    let coordStep = 'from';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const sess = await API.session();
+        if (!sess.loggedIn || sess.user.role !== 'admin') {
+            window.location.href = '../login.html';
+            return;
+        }
+        document.getElementById('nav-username').textContent = sess.user.name;
+        loadDashboardStats();
+        loadDrivers();
+    });
+
+    function showTab(name) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.admin-nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        document.querySelector(`[onclick="showTab('${name}')"]`)?.classList.add('active');
+
+        // Lazy-load data
+        if (name === 'cars') loadCarsAdmin();
+        if (name === 'users') loadUsers();
+        if (name === 'reservations') loadReservationsAdmin();
+    }
+
+    async function loadDashboardStats() {
+        const [carsData, usersData, resData] = await Promise.all([
+            API.getCars(),
+            API.manage('get_users'),
+            API.manage('get_reservations')
+        ]);
+
+        if (carsData.cars) {
+            document.getElementById('a-stat-cars').textContent = carsData.cars.length;
+            document.getElementById('a-stat-moving').textContent = carsData.cars.filter(c => c.status === 'moving').length;
+        }
+        if (usersData.users)         document.getElementById('a-stat-users').textContent = usersData.users.length;
+        if (resData.reservations)    document.getElementById('a-stat-reservations').textContent = resData.reservations.length;
+    }
+
+    async function loadCarsAdmin() {
+        const data  = await API.getCars();
+        const tbody = document.getElementById('cars-tbody');
+        if (!data.cars) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px">Failed to load</td></tr>'; return; }
+        if (!data.cars.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:20px">No louages</td></tr>'; return; }
+
+        tbody.innerHTML = data.cars.map(c => `
+            <tr>
+                <td class="text-muted">#${c.id}</td>
+                <td style="font-weight:600;color:var(--text-primary)">${c.route}</td>
+                <td>${statusBadge(c.status)}</td>
+                <td><span style="color:${c.available_seats > 0 ? 'var(--green)' : 'var(--red)'}">${c.available_seats}</span>/${c.total_seats}</td>
+                <td class="text-secondary">${c.driver_name || '—'}</td>
+                <td class="text-muted">${c.vehicle_type}</td>
+                <td class="text-muted">${c.plate_number || '—'}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCar(${c.id}, '${c.route}')">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function loadUsers() {
+        const data  = await API.manage('get_users');
+        const tbody = document.getElementById('users-tbody');
+        if (!data.users) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">Failed</td></tr>'; return; }
+        tbody.innerHTML = data.users.map((u, i) => `
+            <tr>
+                <td class="text-muted">${u.id}</td>
+                <td style="color:var(--text-primary);font-weight:600">${u.name}</td>
+                <td class="text-secondary">${u.email}</td>
+                <td><span class="badge role-badge-${u.role}">${u.role}</span></td>
+                <td class="text-muted">${formatDate(u.created_at)}</td>
+            </tr>
+        `).join('');
+    }
+
+    async function loadReservationsAdmin() {
+        const data  = await API.manage('get_reservations');
+        const tbody = document.getElementById('res-tbody');
+        if (!data.reservations) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">Failed</td></tr>'; return; }
+        if (!data.reservations.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px">No reservations yet</td></tr>'; return; }
+        tbody.innerHTML = data.reservations.map((r, i) => `
+            <tr>
+                <td class="text-muted">${r.id}</td>
+                <td>
+                    <div style="color:var(--text-primary);font-weight:600">${r.user_name}</div>
+                    <div class="text-xs text-muted">${r.email}</div>
+                </td>
+                <td class="text-secondary">${r.route}</td>
+                <td><span style="color:var(--indigo-lt);font-weight:700">× ${r.seats_reserved}</span></td>
+                <td>${statusBadge(r.status || 'active')}</td>
+                <td class="text-muted">${formatDate(r.created_at)}</td>
+            </tr>
+        `).join('');
+    }
+
+    async function loadDrivers() {
+        const data = await API.manage('get_drivers');
+        const sel  = document.getElementById('ac-driver');
+        if (!data.drivers) return;
+        data.drivers.forEach(d => {
+            const opt = new Option(d.name, d.id);
+            sel.add(opt);
+        });
+    }
+
+    async function deleteCar(id, route) {
+        if (!confirm(`Delete louage: "${route}"?\nAll reservations for this louage will also be removed.`)) return;
+        const res = await API.manage('delete_car', { id });
+        if (res.success) {
+            showToast('Louage deleted', 'success');
+            loadCarsAdmin();
+            loadDashboardStats();
+        } else {
+            showToast(res.error || 'Delete failed', 'error');
+        }
+    }
+
+    async function addCar() {
+        const from   = document.getElementById('ac-from').value.trim();
+        const to     = document.getElementById('ac-to').value.trim();
+        const lat    = document.getElementById('ac-lat').value;
+        const lng    = document.getElementById('ac-lng').value;
+        const dlat   = document.getElementById('ac-dlat').value;
+        const dlng   = document.getElementById('ac-dlng').value;
+
+        if (!from || !to || !lat || !lng || !dlat || !dlng) {
+            showToast('Please fill in all required fields', 'error'); return;
+        }
+
+        const res = await API.manage('add_car', {
+            route:            `${from} → ${to}`,
+            departure_city:   document.getElementById('ac-from').options[document.getElementById('ac-from').selectedIndex]?.value || from,
+            destination_city: document.getElementById('ac-to').options[document.getElementById('ac-to').selectedIndex]?.value || to,
+            total_seats:      parseInt(document.getElementById('ac-seats').value),
+            lat, lng, dest_lat: dlat, dest_lng: dlng,
+            speed:            document.getElementById('ac-speed').value,
+            vehicle_type:     document.getElementById('ac-type').value,
+            plate_number:     document.getElementById('ac-plate').value,
+            driver_id:        document.getElementById('ac-driver').value || null,
+            estimated_departure: document.getElementById('ac-departure').value || null
+        });
+
+        if (res.success) {
+            showToast('Louage added successfully!', 'success');
+            // Clear form
+            ['ac-from','ac-to','ac-plate','ac-lat','ac-lng','ac-dlat','ac-dlng'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            loadDashboardStats();
+        } else {
+            showToast(res.error || 'Failed to add louage', 'error');
+        }
+    }
+
+    // Auto-fill coordinates when city selected
+    function autoFillCoords(which, val) {
+        var sel = document.getElementById(which === 'from' ? 'ac-from' : 'ac-to');
+        var opt = sel.options[sel.selectedIndex];
+        if (!opt || !opt.dataset.lat) return;
+        if (which === 'from') {
+            document.getElementById('ac-lat').value = opt.dataset.lat;
+            document.getElementById('ac-lng').value = opt.dataset.lng;
+        } else {
+            document.getElementById('ac-dlat').value = opt.dataset.lat;
+            document.getElementById('ac-dlng').value = opt.dataset.lng;
+        }
+    }
+    function fillCoords(lat, lng, city) {} // kept for compatibility
+</script>
+</body>
+</html>

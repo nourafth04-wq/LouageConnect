@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LouageConnect — API Test</title>
+<link rel="stylesheet" href="css/main.css?v=2">
+<script src="js/theme.js?v=2"></script>
+<style>
+  body{font-family:monospace;background:#0B1225;color:#94A3B8;padding:24px;max-width:900px}
+  h2{color:#F1F5F9;font-size:1.2rem;margin-bottom:16px}
+  .t{margin:10px 0;padding:12px 16px;border-radius:8px;border:1px solid #1E293B}
+  .ok{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3);color:#22C55E}
+  .fail{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#EF4444}
+  .info{background:rgba(79,70,229,.08);border-color:rgba(79,70,229,.3);color:#6366F1}
+  pre{margin-top:8px;font-size:.75rem;color:#64748B;white-space:pre-wrap;max-height:200px;overflow-y:auto}
+  .btn{display:inline-block;padding:8px 16px;background:#4F46E5;color:#fff;border-radius:6px;border:none;cursor:pointer;margin:3px;font-size:.85rem;text-decoration:none}
+  #base{color:#F59E0B;font-weight:bold}
+</style>
+</head>
+<body>
+<h2>&#x1F527; LouageConnect — API Diagnostics</h2>
+<p>Detected base: <span id="base">detecting...</span></p>
+<div id="results"></div>
+<hr style="border-color:#1E293B;margin:20px 0">
+<a href="setup_passwords.php" class="btn" style="background:#22C55E;color:#000">Setup Wizard</a>
+<a href="index.html" class="btn">Home</a>
+<a href="login.html" class="btn">Login</a>
+<a href="dashboard.html" class="btn">Dashboard</a>
+
+<script>
+var R = document.getElementById('results');
+var BASE = '';
+
+function add(label, ok, detail) {
+    var d = document.createElement('div');
+    d.className = 't ' + (ok===true?'ok':ok===false?'fail':'info');
+    d.innerHTML = (ok===true?'✅ ':ok===false?'❌ ':'ℹ️ ') + '<strong>' + label + '</strong>';
+    if (detail) d.innerHTML += '<pre>' + detail + '</pre>';
+    R.appendChild(d);
+}
+
+async function ping(url, label) {
+    try {
+        var r   = await fetch(url, {credentials:'include'});
+        var raw = await r.text();
+        // Strip any leading PHP warnings
+        var start = raw.indexOf('{');
+        var end   = raw.lastIndexOf('}');
+        if (start === -1) {
+            add(label, false, 'No JSON found. HTTP ' + r.status + '\nRaw response: ' + raw.substring(0,500));
+            return null;
+        }
+        try {
+            var data = JSON.parse(raw.substring(start, end+1));
+            add(label, true, 'HTTP ' + r.status + '\n' + JSON.stringify(data, null, 2).substring(0, 600));
+            return data;
+        } catch(e) {
+            add(label, false, 'JSON parse error: ' + e.message + '\nRaw: ' + raw.substring(0,400));
+            return null;
+        }
+    } catch(e) {
+        add(label, false, 'Fetch error: ' + e.message);
+        return null;
+    }
+}
+
+(async function() {
+    // Detect base
+    var scripts = document.getElementsByTagName('script');
+    BASE = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/,'');
+    document.getElementById('base').textContent = BASE;
+    add('Base URL', null, BASE);
+
+    var cars = await ping(BASE + '/api/get_cars.php', 'GET /api/get_cars.php');
+    if (cars && cars.cars) {
+        add('Cars loaded', true, cars.cars.length + ' louage(s) in database');
+    }
+
+    var sess = await ping(BASE + '/php/session.php', 'GET /php/session.php');
+    if (sess) {
+        add('Session', true, sess.loggedIn ? 'Logged in as: ' + sess.user.name + ' (' + sess.user.role + ')' : 'Not logged in');
+    }
+
+    add('Next steps', null,
+        cars && cars.cars && cars.cars.length > 0
+        ? '✅ DB connected and working!\n→ Go to setup_passwords.php to set passwords\n→ Then login at login.html'
+        : '❌ No cars returned.\n→ Import database.sql in phpMyAdmin\n→ Check php/config.php DB credentials\n→ Check EasyPHP error log');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Louage — LouageConnect</title>
+    <link rel="stylesheet" href="css/main.css?v=2">
+    <script src="js/theme.js?v=2"></script>
+    <style>
+        .page-header {
+            padding: 32px 0 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 28px;
+        }
+        .page-title { font-size: 1.8rem; font-weight: 800; }
+        .stats-mini {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .stat-mini {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            padding: 5px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+        }
+        .stat-mini strong { color: var(--text-primary); }
+        .reservations-section {
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="index.html" class="nav-brand">
+        <div class="brand-icon logo-img"><img src="logo.png" alt="LouageConnect" style="height:36px;width:auto;object-fit:contain;display:block;border-radius:8px;"></div>
+        LouageConnect
+    </a>
+    <ul class="nav-links">
+        <li><a href="dashboard.html" class="active">Louages</a></li>
+        <li><a href="map.html">Live Map</a></li>
+    </ul>
+    <div class="nav-actions">
+        <div class="live-indicator"><div class="live-dot"></div> Live</div>
+        <span id="nav-username" class="text-sm text-secondary hidden"></span>
+        <a id="nav-admin"  href="admin/index.html"  class="btn btn-ghost btn-sm hidden">Admin</a>
+        <a id="nav-driver" href="driver/index.html" class="btn btn-ghost btn-sm hidden">Driver Panel</a>
+        <a id="nav-login"  href="login.html"        class="btn btn-ghost btn-sm">Login</a>
+        <a id="nav-logout" href="php/logout.php"    class="btn btn-ghost btn-sm hidden">Logout</a>
+    </div>
+</nav>
+
+<div class="page-content">
+    <div class="container">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Find a Louage 🚖</h1>
+            <div class="stats-mini">
+                <div class="stat-mini">🚗 <strong id="stat-total">—</strong> routes</div>
+                <div class="stat-mini">✅ <strong id="stat-available">—</strong> available</div>
+                <div class="stat-mini">🏃 <strong id="stat-moving">—</strong> moving</div>
+                <div class="stat-mini">💺 <strong id="stat-seats">—</strong> seats free</div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div style="flex:1;min-width:140px">
+                <label class="form-label" style="margin-bottom:4px">From</label>
+                <select id="filter-from" class="form-select" style="padding:8px 12px;font-size:0.85rem">
+                    <option value="">Any city</option>
+                </select>
+            </div>
+            <div style="flex:1;min-width:140px">
+                <label class="form-label" style="margin-bottom:4px">To</label>
+                <select id="filter-to" class="form-select" style="padding:8px 12px;font-size:0.85rem">
+                    <option value="">Any city</option>
+                </select>
+            </div>
+            <div style="flex:1;min-width:120px">
+                <label class="form-label" style="margin-bottom:4px">Status</label>
+                <select id="filter-status" class="form-select" style="padding:8px 12px;font-size:0.85rem">
+                    <option value="">All</option>
+                    <option value="waiting">Waiting</option>
+                    <option value="full">Full</option>
+                    <option value="moving">Moving</option>
+                </select>
+            </div>
+            <div style="flex:2;min-width:180px">
+                <label class="form-label" style="margin-bottom:4px">Search</label>
+                <input id="filter-search" type="text" class="form-input"
+                    placeholder="Search route…" style="padding:8px 12px;font-size:0.85rem">
+            </div>
+            <div style="align-self:flex-end">
+                <button onclick="resetFilters()" class="btn btn-ghost btn-sm">Reset</button>
+            </div>
+        </div>
+
+        <!-- Cars Grid -->
+        <div id="cars-grid" class="grid-auto">
+            <!-- Loading -->
+            <div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;padding:60px;gap:16px">
+                <div class="spinner"></div>
+                <span class="text-secondary">Loading louages…</span>
+            </div>
+        </div>
+
+        <!-- My Reservations (shown if logged in) -->
+        <div id="reservations-section" class="reservations-section hidden">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">My Reservations</h2>
+                    <p class="section-sub text-secondary text-sm">Your active and past bookings</p>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="loadReservations()">↺ Refresh</button>
+            </div>
+            <div class="card" style="overflow:auto">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Route</th>
+                            <th>Seats</th>
+                            <th>Car Status</th>
+                            <th>Vehicle</th>
+                            <th>Booked At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-tbody">
+                        <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:28px">No reservations yet</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Car Detail Modal -->
+<div id="car-modal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modal-title">Louage Details</h2>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+<div class="toast-container"></div>
+<script src="js/utils.js"></script>
+<script src="js/dashboard.js"></script>
+<script>
+    // Show reservations section after login check
+    document.addEventListener('DOMContentLoaded', async () => {
+        const sess = await checkSession();
+        if (sess.loggedIn) {
+            document.getElementById('reservations-section').classList.remove('hidden');
+            loadReservations();
+        }
+    });
+
+    async function loadReservations() {
+        const data = await API.myReservations();
+        const tbody = document.getElementById('reservations-tbody');
+        if (!data.reservations || data.reservations.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:28px">No reservations yet</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.reservations.map((r, i) => `
+            <tr>
+                <td style="color:var(--text-muted)">${i + 1}</td>
+                <td style="font-weight:600;color:var(--text-primary)">${r.route}</td>
+                <td><span class="badge" style="background:rgba(79,70,229,0.15);color:var(--indigo-lt);border:1px solid rgba(79,70,229,0.2)">💺 ${r.seats_reserved}</span></td>
+                <td>${statusBadge(r.car_status)}</td>
+                <td class="text-muted">${r.vehicle_type}</td>
+                <td class="text-muted">${formatDate(r.created_at)}</td>
+            </tr>
+        `).join('');
+    }
+
+    // Close modal on overlay click
+    document.getElementById('car-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LouageConnect — Tunisian Shared Taxi Platform</title>
+    <link rel="stylesheet" href="css/main.css?v=2">
+    <script src="js/theme.js?v=2"></script>
+    <style>
+        .features-section { padding: 80px 0; }
+        .feature-card {
+            padding: 28px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            transition: var(--transition);
+        }
+        .feature-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-glow);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .feature-title {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .routes-preview {
+            padding: 60px 0;
+            border-top: 1px solid var(--border);
+        }
+        .route-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            cursor: default;
+        }
+        .route-pill:hover {
+            border-color: var(--border-glow);
+            color: var(--text-primary);
+            background: var(--bg-card2);
+        }
+        .routes-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 24px;
+        }
+        .cta-section {
+            padding: 80px 0;
+            text-align: center;
+        }
+        .cta-card {
+            background: linear-gradient(135deg, rgba(79,70,229,0.12), rgba(34,197,94,0.06));
+            border: 1px solid rgba(79,70,229,0.25);
+            border-radius: var(--radius-xl);
+            padding: 60px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-card::before {
+            content: '';
+            position: absolute;
+            top: -100px; right: -100px;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(79,70,229,0.15), transparent 70%);
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <a href="index.html" class="nav-brand">
+        <div class="brand-icon logo-img"><img src="logo.png" alt="LouageConnect" style="height:36px;width:auto;object-fit:contain;display:block;border-radius:8px;"></div>
+        LouageConnect
+    </a>
+    <ul class="nav-links">
+        <li><a href="dashboard.html">Louages</a></li>
+        <li><a href="map.html">Live Map</a></li>
+    </ul>
+    <div class="nav-actions">
+        <span id="nav-username" class="text-sm text-secondary hidden"></span>
+        <a id="nav-admin" href="admin/index.html" class="btn btn-ghost btn-sm hidden">Admin</a>
+        <a id="nav-driver" href="driver/index.html" class="btn btn-ghost btn-sm hidden">Driver</a>
+        <a id="nav-login" href="login.html" class="btn btn-ghost btn-sm">Login</a>
+        <a id="nav-logout" href="php/logout.php" class="btn btn-ghost btn-sm hidden">Logout</a>
+        <a href="register.html" class="btn btn-primary btn-sm">Sign Up</a>
+    </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-tag">
+            <span class="live-dot"></span>
+            Live tracking across Tunisia
+        </div>
+        <h1>
+            Your <span>Louage</span><br>
+            Rides, Reimagined
+        </h1>
+        <p class="hero-sub">
+            Track shared taxis in real-time, check available seats, and reserve your spot
+            before leaving home. Covering all major routes across Tunisia.
+        </p>
+        <div class="hero-actions">
+            <a href="dashboard.html" class="btn btn-primary btn-lg">
+                🔍 Find Louage
+            </a>
+            <a href="map.html" class="btn btn-ghost btn-lg">
+                🗺️ Live Map
+            </a>
+        </div>
+
+        <!-- Live Stats -->
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-value" id="hero-stat-cars">10</div>
+                <div class="stat-label">Active Routes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="hero-stat-moving">—</div>
+                <div class="stat-label">Currently Moving</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="hero-stat-seats">—</div>
+                <div class="stat-label">Available Seats</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Cities Covered</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features-section">
+    <div class="container">
+        <div class="section-header" style="text-align:center;display:block;margin-bottom:40px">
+            <div class="hero-tag" style="display:inline-flex;margin-bottom:12px">Why LouageConnect</div>
+            <h2 style="font-size:2rem">Everything you need to travel smarter</h2>
+        </div>
+        <div class="grid-3">
+            <div class="feature-card">
+                <span class="feature-icon">🗺️</span>
+                <div class="feature-title">Real-Time Map</div>
+                <p class="text-sm text-secondary">Watch louages move across the map live. Know exactly where your vehicle is and its ETA.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">💺</span>
+                <div class="feature-title">Seat Availability</div>
+                <p class="text-sm text-secondary">See exactly how many seats are left before heading to the station. Reserve instantly.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🎟️</span>
+                <div class="feature-title">Online Reservation</div>
+                <p class="text-sm text-secondary">Secure your seat with a single click. No more waiting in long queues at the louage station.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">⏱️</span>
+                <div class="feature-title">Smart ETA</div>
+                <p class="text-sm text-secondary">Estimated departure time based on how fast seats are filling, and arrival time by distance.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🚗</span>
+                <div class="feature-title">Driver Dashboard</div>
+                <p class="text-sm text-secondary">Drivers can update their status, location, and seat count in real-time from any device.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🛡️</span>
+                <div class="feature-title">Verified Routes</div>
+                <p class="text-sm text-secondary">All louages and routes verified by our admin team. Safe, reliable, official vehicles only.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== ROUTES ===== -->
+<section class="routes-preview">
+    <div class="container">
+        <h2 style="font-size:1.5rem;font-family:var(--font-display);font-weight:700;margin-bottom:8px">Popular Routes</h2>
+        <p class="text-secondary text-sm">Most frequently traveled louage corridors in Tunisia</p>
+        <div class="routes-grid">
+            <div class="route-pill">🚖 Tunis → Sfax</div>
+            <div class="route-pill">🚖 Tunis → Sousse</div>
+            <div class="route-pill">🚖 Sousse → Tunis</div>
+            <div class="route-pill">🚖 Sfax → Tunis</div>
+            <div class="route-pill">🚖 Tunis → Nabeul</div>
+            <div class="route-pill">🚖 Tunis → Bizerte</div>
+            <div class="route-pill">🚖 Kairouan → Tunis</div>
+            <div class="route-pill">🚖 Tunis → Monastir</div>
+            <div class="route-pill">🚖 Sfax → Sousse</div>
+            <div class="route-pill">🚖 Nabeul → Tunis</div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-card">
+            <h2 style="font-size:2.2rem;font-family:var(--font-display);font-weight:800;margin-bottom:16px">
+                Ready to travel smarter?
+            </h2>
+            <p class="text-secondary" style="margin-bottom:32px;font-size:1.05rem">
+                Join thousands of Tunisians who already use LouageConnect to travel efficiently.
+            </p>
+            <div class="flex gap-3" style="justify-content:center">
+                <a href="register.html" class="btn btn-primary btn-lg">Create Free Account</a>
+                <a href="dashboard.html" class="btn btn-ghost btn-lg">Browse Routes</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer style="border-top:1px solid var(--border);padding:32px 24px;text-align:center;color:var(--text-muted);font-size:0.825rem;position:relative;z-index:1">
+    <strong style="color:var(--text-secondary)">LouageConnect</strong> — Tunisia's shared taxi platform &nbsp;·&nbsp;
+    Built with ♥ for Tunisian travelers
+</footer>
+
+<div class="toast-container"></div>
+<script src="js/utils.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        await checkSession();
+        // Load live stats
+        const data = await API.getCars();
+        if (data.cars) {
+            const moving = data.cars.filter(c => c.status === 'moving').length;
+            const seats  = data.cars.reduce((s, c) => s + c.available_seats, 0);
+            document.getElementById('hero-stat-cars').textContent   = data.cars.length;
+            document.getElementById('hero-stat-moving').textContent = moving;
+            document.getElementById('hero-stat-seats').textContent  = seats;
+        }
+    });
+</script>
+</body>
+</html>

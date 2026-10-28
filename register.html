@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — LouageConnect</title>
+    <link rel="stylesheet" href="css/main.css?v=2">
+    <script src="js/theme.js?v=2"></script>
+    <style>
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+        .auth-wrap { width: 100%; max-width: 440px; position: relative; z-index: 1; }
+        .auth-logo { text-align: center; margin-bottom: 32px; }
+        .auth-logo a {
+            display: inline-flex; align-items: center; gap: 10px;
+            font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--text-primary);
+        }
+        .brand-icon { width:auto;height:44px;background:transparent;border-radius:0;display:flex;align-items:center;justify-content:center; }
+        .brand-icon img { height:44px;width:auto;object-fit:contain;display:block;border-radius:10px; }
+        .auth-card { background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:36px 32px;box-shadow:var(--shadow-card),0 0 80px rgba(79,70,229,0.08); }
+        .auth-title { font-family:var(--font-display);font-size:1.6rem;font-weight:800;margin-bottom:6px; }
+        .auth-sub { color:var(--text-secondary);font-size:0.9rem;margin-bottom:28px; }
+        .auth-footer { text-align:center;margin-top:20px;font-size:0.875rem;color:var(--text-muted); }
+        .role-selector { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+        .role-option {
+            position:relative;
+        }
+        .role-option input[type="radio"] { position:absolute;opacity:0;pointer-events:none; }
+        .role-label {
+            display:flex;flex-direction:column;align-items:center;gap:6px;
+            padding:14px;background:var(--bg-input);border:2px solid var(--border);
+            border-radius:var(--radius-md);cursor:pointer;transition:var(--transition);
+            font-size:0.85rem;font-weight:600;color:var(--text-secondary);text-align:center;
+        }
+        .role-label:hover { border-color:rgba(79,70,229,0.3);color:var(--text-primary); }
+        .role-option input:checked + .role-label {
+            border-color:var(--indigo);background:var(--indigo-glow);color:var(--indigo-lt);
+        }
+        .role-label .role-icon { font-size:1.5rem; }
+        #error-msg { padding:12px 14px;background:var(--red-glow);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius-sm);color:var(--red);font-size:0.875rem;margin-bottom:16px;display:none; }
+        .password-strength { height:3px;border-radius:2px;background:var(--bg-card2);margin-top:6px;overflow:hidden; }
+        .password-strength-fill { height:100%;border-radius:2px;transition:width 0.3s ease,background 0.3s ease; }
+    </style>
+</head>
+<body>
+<div class="auth-wrap">
+    <div class="auth-logo">
+        <a href="index.html">
+            <div class="brand-icon logo-img"><img src="logo.png" alt="LouageConnect" style="height:44px;width:auto;object-fit:contain;display:block;border-radius:10px;"></div>
+            LouageConnect
+        </a>
+    </div>
+
+    <div class="auth-card">
+        <h1 class="auth-title">Create account</h1>
+        <p class="auth-sub">Join LouageConnect — it's free and takes 30 seconds</p>
+
+        <div id="error-msg"></div>
+
+        <form id="register-form" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label class="form-label" for="name">Full Name</label>
+                <input type="text" id="name" class="form-input"
+                    placeholder="Mohamed Ali" required autocomplete="name">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input type="email" id="email" class="form-input"
+                    placeholder="you@example.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" id="password" class="form-input"
+                    placeholder="At least 6 characters" required
+                    oninput="checkStrength(this.value)">
+                <div class="password-strength">
+                    <div class="password-strength-fill" id="pw-strength" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">I am a</label>
+                <div class="role-selector">
+                    <div class="role-option">
+                        <input type="radio" name="role" id="role-user" value="user" checked>
+                        <label class="role-label" for="role-user">
+                            <span class="role-icon">👤</span>
+                            Passenger
+                        </label>
+                    </div>
+                    <div class="role-option">
+                        <input type="radio" name="role" id="role-driver" value="driver">
+                        <label class="role-label" for="role-driver">
+                            <span class="role-icon">🚗</span>
+                            Driver
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-full btn-lg" id="register-btn"
+                style="justify-content:center;margin-top:4px">
+                Create Account
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account? <a href="login.html">Sign in</a>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container"></div>
+<script src="js/utils.js"></script>
+<script>
+    function checkStrength(pw) {
+        const bar = document.getElementById('pw-strength');
+        let score = 0;
+        if (pw.length >= 6) score++;
+        if (pw.length >= 10) score++;
+        if (/[A-Z]/.test(pw)) score++;
+        if (/[0-9]/.test(pw)) score++;
+        if (/[^a-zA-Z0-9]/.test(pw)) score++;
+        const colors = ['#EF4444','#F59E0B','#F59E0B','#22C55E','#22C55E'];
+        bar.style.width = (score * 20) + '%';
+        bar.style.background = colors[score - 1] || '#EF4444';
+    }
+
+    async function handleRegister(e) {
+        e.preventDefault();
+        const name     = document.getElementById('name').value;
+        const email    = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const role     = document.querySelector('input[name="role"]:checked').value;
+        const btn      = document.getElementById('register-btn');
+        const errDiv   = document.getElementById('error-msg');
+
+        btn.disabled = true;
+        btn.textContent = 'Creating account…';
+        errDiv.style.display = 'none';
+
+        const res = await API.register(name, email, password, role);
+
+        if (res.success) {
+            showToast('Account created! Redirecting…', 'success');
+            setTimeout(() => {
+                window.location.href = role === 'driver' ? 'driver/index.html' : 'dashboard.html';
+            }, 1000);
+        } else {
+            errDiv.textContent = res.error || 'Registration failed';
+            errDiv.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Panel — LouageConnect</title>
+    <link rel="stylesheet" href="../css/main.css?v=2">
+    <script src="../js/theme.js?v=2"></script>
+    <style>
+        .driver-header {
+            padding: 32px 0 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+        .driver-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 14px;
+            background: rgba(79,70,229,0.12);
+            border: 1px solid rgba(79,70,229,0.3);
+            border-radius: 100px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--indigo-lt);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 12px;
+        }
+        .car-status-card {
+            background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(34,197,94,0.05));
+            border: 1px solid rgba(79,70,229,0.25);
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            margin-bottom: 28px;
+        }
+        .big-route {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .control-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .control-title {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .seat-btns {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .seat-counter {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .seat-counter button {
+            width: 40px; height: 40px;
+            background: var(--bg-card2);
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .seat-counter button:hover { background: rgba(79,70,229,0.2); }
+        .seat-counter span {
+            width: 48px;
+            text-align: center;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            padding: 8px;
+            background: var(--bg-input);
+        }
+        .status-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+        .status-btn {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            border: 2px solid transparent;
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .status-btn.waiting { background: var(--amber-glow); color: var(--amber); border-color: rgba(245,158,11,0.3); }
+        .status-btn.full    { background: var(--red-glow);   color: var(--red);   border-color: rgba(239,68,68,0.3); }
+        .status-btn.moving  { background: var(--green-glow); color: var(--green); border-color: rgba(34,197,94,0.3); }
+        .status-btn:hover, .status-btn.active { filter: brightness(1.3); border-color: currentColor; transform: translateY(-2px); }
+        .coord-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .sim-btn {
+            padding: 8px 16px;
+            background: rgba(79,70,229,0.15);
+            border: 1px solid rgba(79,70,229,0.3);
+            color: var(--indigo-lt);
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .sim-btn:hover { background: rgba(79,70,229,0.25); }
+        .sim-btn.active { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: var(--green); }
+        #no-car-msg { text-align: center; padding: 60px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="../index.html" class="nav-brand">
+        <div class="brand-icon logo-img"><img src="../logo.png" alt="LouageConnect" style="height:36px;width:auto;object-fit:contain;display:block;border-radius:8px;"></div>
+        LouageConnect
+    </a>
+    <ul class="nav-links">
+        <li><a href="../dashboard.html">Louages</a></li>
+        <li><a href="../map.html">Live Map</a></li>
+    </ul>
+    <div class="nav-actions">
+        <span id="nav-username" class="text-sm text-secondary"></span>
+        <a href="../php/logout.php" class="btn btn-ghost btn-sm">Logout</a>
+    </div>
+</nav>
+
+<div class="page-content">
+    <div class="container">
+
+        <div class="driver-header">
+            <div class="driver-badge">🚗 Driver Panel</div>
+            <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:800" id="driver-name">Loading…</h1>
+            <p class="text-secondary text-sm">Manage your louage in real-time</p>
+        </div>
+
+        <div id="no-car-msg" class="hidden">
+            <div style="font-size:3rem;margin-bottom:16px">🚗</div>
+            <p style="font-size:1.1rem;color:var(--text-secondary);margin-bottom:8px">No vehicle assigned to you yet</p>
+            <p class="text-sm text-muted">Contact the admin to get a vehicle assigned</p>
+        </div>
+
+        <div id="driver-content" class="hidden">
+
+            <!-- Current Car Status -->
+            <div class="car-status-card">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                    <div>
+                        <div class="big-route" id="car-route">Tunis → Sfax</div>
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                            <span id="car-status-badge"></span>
+                            <span class="text-sm text-muted" id="car-plate"></span>
+                            <span class="text-sm text-muted" id="car-vehicle"></span>
+                        </div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:800" id="car-seats">—</div>
+                        <div class="text-sm text-muted">seats available</div>
+                    </div>
+                </div>
+                <div id="car-seat-grid" class="seat-grid" style="margin-top:16px;max-width:200px"></div>
+            </div>
+
+            <!-- Status Control -->
+            <div class="control-section">
+                <div class="control-title">🚦 Trip Controls</div>
+                <div class="status-btns">
+                    <button class="status-btn waiting" onclick="updateStatus('waiting')">⏳ Waiting</button>
+                    <button class="status-btn full"    onclick="updateStatus('full')">🔴 Mark Full</button>
+                </div>
+                <div style="margin-top:12px;padding:14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:10px">
+                    <p style="font-size:.82rem;color:var(--text-secondary);margin-bottom:10px">
+                        <strong>Force departure</strong> — depart even if not all seats are filled.
+                        Car auto-departs when full after 5 minutes.
+                    </p>
+                    <button class="btn btn-success" onclick="forceDepart()" style="width:100%">🚀 Force Depart Now</button>
+                </div>
+            </div>
+
+            <!-- Seat Control -->
+            <div class="control-section">
+                <div class="control-title">💺 Update Available Seats</div>
+                <div class="seat-btns">
+                    <div class="seat-counter">
+                        <button onclick="changeSeatDisplay(-1)">−</button>
+                        <span id="seat-display">0</span>
+                        <button onclick="changeSeatDisplay(1)">+</button>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSeats()">Save Seats</button>
+                    <span class="text-sm text-muted" id="total-seats-hint"></span>
+                </div>
+            </div>
+
+            <!-- Location Control -->
+            <div class="control-section">
+                <div class="control-title">📍 Update Location</div>
+                <div class="coord-inputs" style="margin-bottom:14px">
+                    <div class="form-group" style="margin:0">
+                        <label class="form-label">Latitude</label>
+                        <input type="number" id="lat-input" class="form-input" step="0.0001" placeholder="36.8190">
+                    </div>
+                    <div class="form-group" style="margin:0">
+                        <label class="form-label">Longitude</label>
+                        <input type="number" id="lng-input" class="form-input" step="0.0001" placeholder="10.1658">
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                    <button class="btn btn-primary btn-sm" onclick="saveLocation()">📍 Update Location</button>
+                    <button class="sim-btn" id="sim-btn" onclick="toggleSimulation()">▶ Start Auto-Simulation</button>
+                </div>
+                <p class="text-xs text-muted" style="margin-top:8px">
+                    Auto-simulation moves your car toward the destination every 3 seconds.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="toast-container"></div>
+<script src="../js/utils.js"></script>
+<script>
+    let myCar = null;
+    let simInterval = null;
+    let simRunning = false;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const sess = await API.session();
+        if (!sess.loggedIn || (sess.user.role !== 'driver' && sess.user.role !== 'admin')) {
+            window.location.href = '../login.html';
+            return;
+        }
+        document.getElementById('driver-name').textContent = 'Welcome, ' + sess.user.name;
+        document.getElementById('nav-username').textContent = sess.user.name;
+        loadMyCar();
+    });
+
+    async function loadMyCar() {
+        const data = await API.manage('get_my_car');
+        if (!data.car) {
+            document.getElementById('no-car-msg').classList.remove('hidden');
+            return;
+        }
+        myCar = data.car;
+        document.getElementById('driver-content').classList.remove('hidden');
+        renderCar(myCar);
+    }
+
+    function renderCar(car) {
+        document.getElementById('car-route').textContent   = car.route;
+        document.getElementById('car-status-badge').innerHTML = statusBadge(car.status);
+        document.getElementById('car-plate').textContent   = car.plate_number || '';
+        document.getElementById('car-vehicle').textContent = car.vehicle_type || '';
+        document.getElementById('car-seats').textContent   = car.available_seats;
+        document.getElementById('seat-display').textContent = car.available_seats;
+        document.getElementById('total-seats-hint').textContent = `of ${car.total_seats} total`;
+        document.getElementById('lat-input').value = parseFloat(car.lat).toFixed(4);
+        document.getElementById('lng-input').value = parseFloat(car.lng).toFixed(4);
+
+        // Seat grid
+        let grid = '';
+        for (let i = 0; i < car.total_seats; i++) {
+            grid += `<div class="seat ${i < (car.total_seats - car.available_seats) ? 'occupied' : 'available'}"></div>`;
+        }
+        document.getElementById('car-seat-grid').innerHTML = grid;
+
+        // Highlight active status button
+        document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.status-btn.${car.status}`)?.classList.add('active');
+    }
+
+    async function updateStatus(status) {
+        if (!myCar) return;
+        const res = await API.manage('update_status', { id: myCar.id, status });
+        if (res.success) {
+            myCar.status = status;
+            renderCar(myCar);
+            showToast('Status updated to: ' + status, 'success');
+        } else {
+            showToast(res.error || 'Update failed', 'error');
+        }
+    }
+
+    function changeSeatDisplay(delta) {
+        if (!myCar) return;
+        const el  = document.getElementById('seat-display');
+        let val   = parseInt(el.textContent) + delta;
+        val       = Math.max(0, Math.min(myCar.total_seats, val));
+        el.textContent = val;
+    }
+
+    async function saveSeats() {
+        if (!myCar) return;
+        const seats = parseInt(document.getElementById('seat-display').textContent);
+        const res   = await API.manage('update_seats', { id: myCar.id, available_seats: seats });
+        if (res.success) {
+            myCar.available_seats = seats;
+            renderCar(myCar);
+            showToast('Seats updated', 'success');
+        } else {
+            showToast(res.error || 'Failed', 'error');
+        }
+    }
+
+    async function saveLocation() {
+        if (!myCar) return;
+        const lat = parseFloat(document.getElementById('lat-input').value);
+        const lng = parseFloat(document.getElementById('lng-input').value);
+        if (isNaN(lat) || isNaN(lng)) { showToast('Invalid coordinates', 'error'); return; }
+        const res = await API.manage('update_location', { id: myCar.id, lat, lng });
+        if (res.success) {
+            myCar.lat = lat; myCar.lng = lng;
+            showToast('Location updated', 'success');
+        } else {
+            showToast(res.error || 'Failed', 'error');
+        }
+    }
+
+    function toggleSimulation() {
+        const btn = document.getElementById('sim-btn');
+        if (simRunning) {
+            clearInterval(simInterval);
+            simRunning = false;
+            btn.textContent = '▶ Start Auto-Simulation';
+            btn.classList.remove('active');
+            showToast('Simulation stopped', 'info');
+        } else {
+            simRunning = true;
+            btn.textContent = '⏹ Stop Simulation';
+            btn.classList.add('active');
+            showToast('Auto-simulation started', 'success');
+            simInterval = setInterval(simulateStep, 3000);
+        }
+    }
+
+    async function forceDepart() {
+        if (!myCar) return;
+        if (!confirm('Force depart now? Car will leave even if not full.')) return;
+        var res = await API.manage('force_depart', { id: myCar.id });
+        if (res.success) {
+            myCar.status = 'moving';
+            renderCar(myCar);
+            showToast('Trip started! Car is now moving.', 'success');
+        } else {
+            showToast(res.error || 'Failed', 'error');
+        }
+    }
+
+    async function simulateStep() {
+        if (!myCar) return;
+        const dlat = myCar.dest_lat - myCar.lat;
+        const dlng = myCar.dest_lng - myCar.lng;
+        const dist = Math.sqrt(dlat * dlat + dlng * dlng);
+        if (dist < 0.005) {
+            clearInterval(simInterval);
+            simRunning = false;
+            document.getElementById('sim-btn').textContent = '▶ Start Auto-Simulation';
+            document.getElementById('sim-btn').classList.remove('active');
+            showToast('Arrived at destination!', 'success');
+            return;
+        }
+        const step   = 0.008;
+        const newLat = parseFloat(myCar.lat) + (dlat / dist) * step;
+        const newLng = parseFloat(myCar.lng) + (dlng / dist) * step;
+        myCar.lat    = newLat;
+        myCar.lng    = newLng;
+        document.getElementById('lat-input').value = newLat.toFixed(4);
+        document.getElementById('lng-input').value = newLng.toFixed(4);
+        await API.manage('update_location', { id: myCar.id, lat: newLat, lng: newLng });
+    }
+</script>
+</body>
+</html>
